@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FaTimes } from 'react-icons/fa'
+import API from '../../api/axios'
 
 const inputClass =
   'w-full border-b border-gray-200 py-2 text-sm outline-none mb-4 bg-transparent focus:border-blue-400 transition'
@@ -19,20 +20,21 @@ export default function AddStudent({ onClose, onSuccess }) {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('http://localhost:4000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, role: 'student' }),
+      // Map 'student' -> 'Student' and 'department' -> 'dept' for Mongoose validation
+      await API.post('/auth/register', { 
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        dept: form.department, // Send as 'dept' to satisfy path 'dept' is required
+        role: 'Student'         // Send capitalized 'Student' for enum validation
       })
-      if (res.ok) {
-        onSuccess?.('Student created successfully')
-        onClose()
-      } else {
-        const data = await res.json().catch(() => ({}))
-        setError(data?.message || 'Failed to add student.')
-      }
-    } catch {
-      setError('Server error. Please try again.')
+
+      onSuccess?.('Student created successfully')
+      onClose()
+    } catch (err) {
+      console.error('Error adding student:', err)
+      const msg = err.response?.data?.message || err.message || 'Failed to add student.'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -41,7 +43,7 @@ export default function AddStudent({ onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-sm relative shadow-xl">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition cursor-pointer">
           <FaTimes size={15} />
         </button>
         <h2 className="text-lg font-semibold mb-1">Add Student</h2>
@@ -59,6 +61,7 @@ export default function AddStudent({ onClose, onSuccess }) {
 
         <input className={inputClass} name="student-password" placeholder="Password" type="password"
           value={form.password} onChange={set('password')} autoComplete="new-password" />
+
         <select className={inputClass} value={form.department} onChange={set('department')} autoComplete='off'>
           <option value="">Select Department</option>
           <option>Software Engineering</option>

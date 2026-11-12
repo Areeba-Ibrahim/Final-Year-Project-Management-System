@@ -1,3 +1,24 @@
+# Environment variables (Crucial for security)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production builds
+dist/
+dist-ssr/
+build/
+client/dist/
+
+# Uploaded files (dims uploaded test files while keeping the uploads folder tracked)
+server/uploads/*
+!server/uploads/.gitkeep
+
 # Logs
 logs
 *.log
@@ -7,16 +28,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# OS & Editor files
+.DS_Store
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj

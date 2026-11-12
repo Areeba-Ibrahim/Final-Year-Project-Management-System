@@ -8,12 +8,15 @@ const columns = [
         <div className="text-xs text-gray-500">{s.email}</div>
       </>
   )},
-  { header: 'Department & Year', render: (s) => (
-      <>
-        {s.department}
-        {s.year && <div className="text-xs text-gray-400">{s.year}</div>}
-      </>
-  )},
+  { header: 'Department & Year', render: (s) => {
+      const dept = s.dept || s.department || 'N/A'
+      return (
+        <>
+          <div>{dept}</div>
+          {s.year && <div className="text-xs text-gray-400">{s.year}</div>}
+        </>
+      )
+  }},
   { header: 'Supervisor', render: (s) => {
       const name = s.supervisor?.name || s.supervisor
       return name
@@ -26,7 +29,7 @@ const columns = [
 const editFields = [
   { name: 'name', label: 'Name' },
   { name: 'email', label: 'Email', type: 'email' },
-  { name: 'department', label: 'Department' },
+  { name: 'dept', label: 'Department' },
   { name: 'year', label: 'Year' },
   { name: 'projectTitle', label: 'Project Title' },
 ]

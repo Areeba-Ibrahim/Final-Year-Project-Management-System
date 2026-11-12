@@ -1,9 +1,12 @@
 import API from './axios'
 
-// ← the only place endpoint paths live. Match these to your backend routes.
-export const getStudents = () => API.get('/students')
-export const getTeachers = () => API.get('/teachers')
-export const deleteTeacher = (id) => API.delete(`/teachers/${id}`)
-export const updateTeacher = (id, data) => API.put(`/teachers/${id}`, data)
-export const assignSupervisor = (studentId, supervisorId) =>
-  API.put(`/students/${studentId}/supervisor`, { supervisorId })
+export const getStudents = () => API.get('/admin/users?role=Student')
+
+export const getTeachers = () => API.get('/admin/users?role=Teacher')
+
+export const deleteTeacher = (id) => API.delete(`/admin/users/${id}`)
+
+export const updateTeacher = (id, data) => API.put(`/admin/users/${id}`, data)
+
+export const assignSupervisor = (projectId, teacherId) =>
+  API.put('/requests/admin-assign', { projectId, teacherId })

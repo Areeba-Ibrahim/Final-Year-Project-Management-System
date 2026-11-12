@@ -1,12 +1,15 @@
 import { Navigate } from 'react-router-dom'
 
 export default function AdminRoute({ children }) {
-  let user = {}
-  try { user = JSON.parse(localStorage.getItem('user') || '{}') }
-  catch { user = {} }
+  const token = localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-  if (!user?.role) return <Navigate to="/login" replace />
-  if (user.role !== 'admin') return <Navigate to="/login" replace />
+  // Case-insensitive check for admin role
+  const role = (user.role || '').toLowerCase()
+
+  if (!token || role !== 'admin') {
+    return <Navigate to="/login" replace />
+  }
 
   return children
 }

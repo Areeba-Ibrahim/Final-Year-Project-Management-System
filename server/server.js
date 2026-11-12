@@ -1,72 +1,41 @@
-import express    from 'express'
-import app        from './app.js'
-import cors       from 'cors'
-import dotenv     from 'dotenv'
-import connectDB  from './config/db.js'
-import authRoutes from './routes/auth.routes.js'
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
+const connectDB = require('./config/db');
 
-// Load env vars early — before anything else reads them
-dotenv.config()
+const app = express();
 
-//----------------
-// DATABASE CONNECTION
-//----------------
-connectDB()
+// Connect Database
+connectDB();
 
-//--------
-// STARTING SERVER
-//--------
-const PORT = process.env.PORT || 4000
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const server = app.listen(PORT, () =>
-  console.log(` Server running on port ${PORT} in ${process.env.NODE_ENV} mode`)
-)
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
 
-//--------
-// GRACEFUL SHUTDOWN HELPER
-//--------
-const shutdown = (reason, exitCode = 1) => {
-  console.error(`\n Shutting down: ${reason}`)
-  server.close(() => {
-    console.log(' HTTP server closed.')
-    process.exit(exitCode)
-  })
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/requests', require('./routes/requestRoutes'));
+app.use('/api/files', require('./routes/fileRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
-  // Force kill if server hangs
-  setTimeout(() => {
-    console.error('  Forcing exit after timeout.')
-    process.exit(exitCode)
-  }, 10_000).unref() // .unref() won't block the event loop
-}
+// Test Route
+app.get('/', (req, res) => {
+  res.send('FYP Management System Backend API is running...');
+});
 
-//--------
-// UNHANDLED PROMISE REJECTIONS
-// e.g. await somePromise() without try/catch
-//--------
-process.on('unhandledRejection', (reason, promise) => {
-  console.error(' Unhandled Rejection at:', promise)
-  console.error('   Reason:', reason)
-  shutdown('Unhandled Promise Rejection')
-})
-
-//--------
-// UNCAUGHT EXCEPTIONS
-// e.g. throw new Error() outside async context
-//--------
-process.on('uncaughtException', (err) => {
-  console.error(' Uncaught Exception:', err.message)
-  console.error(err.stack);
-  server.close(() => {
-    console.log(' HTTP server closed.');    
-    process.exit(1)
-  })
-})
-
-//--------
-// GRACEFUL TERMINATION SIGNALS
-// SIGTERM → sent by Docker / Kubernetes / PM2 to stop the process
-// SIGINT  → sent by Ctrl+C in terminal
-//--------
-process.on('SIGTERM', () => shutdown('SIGTERM received', 0))
-process.on('SIGINT',  () => shutdown('SIGINT received',  0))
-export default server
+// Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
